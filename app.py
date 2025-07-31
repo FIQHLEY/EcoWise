@@ -10,9 +10,18 @@ def topsis_method(data, weights, impacts):
     # Weighted normalized decision matrix
     weighted_data = norm_data * weights
 
+    # Initialize ideal and negative-ideal solutions
+    ideal_solution = np.zeros(data.shape[1])
+    negative_ideal_solution = np.zeros(data.shape[1])
+
     # Ideal and negative-ideal solutions
-    ideal_solution = np.max(weighted_data, axis=0) if impacts == 'Benefit' else np.min(weighted_data, axis=0)
-    negative_ideal_solution = np.min(weighted_data, axis=0) if impacts == 'Benefit' else np.max(weighted_data, axis=0)
+    for j in range(data.shape[1]):
+        if impacts[j] == 'Benefit':
+            ideal_solution[j] = np.max(weighted_data[:, j])
+            negative_ideal_solution[j] = np.min(weighted_data[:, j])
+        else:  # For 'Cost' criteria, invert the logic
+            ideal_solution[j] = np.min(weighted_data[:, j])
+            negative_ideal_solution[j] = np.max(weighted_data[:, j])
 
     # Calculate the Euclidean distance to the ideal and negative-ideal solutions
     distance_to_ideal = np.sqrt(((weighted_data - ideal_solution) ** 2).sum(axis=1))
@@ -46,14 +55,22 @@ if uploaded_file is not None:
     st.sidebar.subheader('Enter the weights for each criterion')
     weights = []
     for j in range(df.shape[1] - 1):  # Excluding the first column (Alternatives)
-        weights.append(st.sidebar.slider(f'Weight for Criterion {j+1}', min_value=0.0, max_value=1.0, value=1.0, step=0.1))
-    weights = np.array(weights) / np.sum(weights)  # Normalize the weights
+        weight = st.sidebar.slider(f'Weight for Criterion {j+1}', min_value=0.0, max_value=1.0, value=1.0, step=0.1)
+        weights.append(weight)
+    weights = np.array(weights)
+    
+    # Display a warning if total weight exceeds 1
+    if np.sum(weights) > 1.0:
+        st.sidebar.warning("The total weight exceeds 1. Please adjust the weights.")
+
+    weights = weights / np.sum(weights)  # Normalize the weights to sum to 1
 
     # Input: Impact (benefit or cost) for each criterion
     st.sidebar.subheader('Enter the impact type (Benefit or Cost) for each criterion')
     impacts = []
     for j in range(df.shape[1] - 1):  # Excluding the first column (Alternatives)
-        impacts.append(st.sidebar.radio(f'Impact for Criterion {j+1}', options=['Benefit', 'Cost']))
+        impact = st.sidebar.radio(f'Impact for Criterion {j+1}', options=['Benefit', 'Cost'], key=f"impact_{j}")
+        impacts.append(impact)
     impacts = np.array(impacts)
 
     # Calculate TOPSIS score
@@ -73,4 +90,3 @@ if uploaded_file is not None:
         st.bar_chart(ranking_df.set_index('Alternative')['TOPSIS Score'])
 else:
     st.info('Please upload a CSV or Excel file to get started.')
-
