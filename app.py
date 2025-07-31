@@ -85,7 +85,7 @@ if uploaded_file is not None:
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
     pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
     distance_df = pd.DataFrame({
-        'Alternative': df.iloc[:, 0],  # Make sure to add the Alternative column
+        'Alternative': df.iloc[:, 0],  # Ensure alternatives column is included
         'Si+ (Distance to PIS)': pos_distance,
         'Si- (Distance to NIS)': neg_distance
     })
@@ -94,7 +94,7 @@ if uploaded_file is not None:
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
     topsis_df = pd.DataFrame({
-        'Alternative': df.iloc[:, 0],  # Make sure to include the Alternative column
+        'Alternative': df.iloc[:, 0],  # Ensure alternatives column is included
         'TOPSIS Score': topsis_score
     })
     st.write("Step 5: TOPSIS Scores", topsis_df)
@@ -110,6 +110,10 @@ if uploaded_file is not None:
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
     df = df.reset_index(drop=True)  # Reset the index to start from 0
     
+    # Debugging step: Check column names
+    st.write("Column Names in Final DataFrame:", df.columns)
+    
+    # Display the final result: Alternatives, TOPSIS Score, Rank
     st.write("Final Results:", df[['Alternative', 'TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
