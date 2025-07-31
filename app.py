@@ -10,8 +10,8 @@ def topsis_method(df, weights, impacts):
     norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Exclude the first column (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
     
-    # Ensure the weights are aligned with the criteria columns
-    weighted_matrix = norm_df.multiply(weights, axis=1)  # Use axis=1 for column-wise multiplication
+    # Ensure weights align with the criteria columns (C1, C2, C3, ...)
+    weighted_matrix = norm_df * weights  # Perform element-wise multiplication
     
     # Positive and negative ideal solutions
     pos_ideal = weighted_matrix.max() if impacts == 'Benefit' else weighted_matrix.min()
@@ -45,23 +45,21 @@ if uploaded_file is not None:
     
     # Setting weight sliders for each criterion (no normalization or sum to 1)
     st.sidebar.header("Set Criteria Weights")
-    criteria = df.columns  # Include all columns, including C1
+    criteria = df.columns[1:]  # All columns except the first column (alternatives)
     weights = []  # Initialize an empty list for weights
     
     # Create a slider for each criterion (no weight sum restriction)
     for criterion in criteria:
-        if criterion != "Unnamed: 0":  # Skip the index column (alternatives)
-            weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.0)
-            weights.append(weight)
+        weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.0)
+        weights.append(weight)
     
     weights = np.array(weights)  # Convert weights to a numpy array
     
     # User input for impacts (Benefit or Cost)
     impacts = []
     for criterion in criteria:
-        if criterion != "Unnamed: 0":  # Skip the index column (alternatives)
-            impact = st.sidebar.selectbox(f"Is {criterion} a benefit or cost?", ['Benefit', 'Cost'], key=criterion)
-            impacts.append(impact)
+        impact = st.sidebar.selectbox(f"Is {criterion} a benefit or cost?", ['Benefit', 'Cost'], key=criterion)
+        impacts.append(impact)
     
     # Compute TOPSIS scores
     if st.button('Calculate Rankings'):
