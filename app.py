@@ -41,14 +41,18 @@ if uploaded_file is not None:
     
     # Ensure that weights sum to 1
     st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
-    criteria = df.columns[1:]
-    weights = []
+    criteria = df.columns[1:]  # Skip the Name column (alternatives)
+    weights = [0.0] * len(criteria)  # Initialize weights as zero
     
     # User input for weights, ensuring the sum of weights equals 1
-    for criterion in criteria:
-        weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.1)
-        weights.append(weight)
-
+    total_weight = st.sidebar.slider("Total Weight", 0.0, 1.0, 1.0)
+    
+    # Dynamically calculate remaining weights
+    remaining_weights = total_weight / (len(criteria) - 1)
+    
+    for i, criterion in enumerate(criteria):
+        weights[i] = st.sidebar.slider(f"Weight for {criterion}", 0.0, remaining_weights, remaining_weights)
+    
     weights_sum = sum(weights)
     weights = np.array([w / weights_sum for w in weights])  # Normalize the weights
     
