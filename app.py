@@ -6,11 +6,17 @@ import numpy as np
 def topsis_method(data, weights, impacts):
     # Normalize the decision matrix
     norm_data = data / np.sqrt((data ** 2).sum(axis=0))
-
+    
+    st.subheader("Step 1: Normalization of Decision Matrix")
+    st.write(norm_data)
+    
     # Weighted normalized decision matrix
     weighted_data = norm_data * weights
-
-    # Initialize ideal and negative-ideal solutions
+    
+    st.subheader("Step 2: Weighted Normalized Decision Matrix")
+    st.write(weighted_data)
+    
+    # Ideal and negative-ideal solutions
     ideal_solution = np.zeros(data.shape[1])
     negative_ideal_solution = np.zeros(data.shape[1])
 
@@ -22,13 +28,24 @@ def topsis_method(data, weights, impacts):
         else:  # For 'Cost' criteria, invert the logic
             ideal_solution[j] = np.min(weighted_data[:, j])
             negative_ideal_solution[j] = np.max(weighted_data[:, j])
-
+    
+    st.subheader("Step 3: Ideal and Negative-Ideal Solutions")
+    st.write(f"Ideal Solution: {ideal_solution}")
+    st.write(f"Negative-Ideal Solution: {negative_ideal_solution}")
+    
     # Calculate the Euclidean distance to the ideal and negative-ideal solutions
     distance_to_ideal = np.sqrt(((weighted_data - ideal_solution) ** 2).sum(axis=1))
     distance_to_negative_ideal = np.sqrt(((weighted_data - negative_ideal_solution) ** 2).sum(axis=1))
-
+    
+    st.subheader("Step 4: Euclidean Distances to Ideal and Negative-Ideal Solutions")
+    st.write(f"Distance to Ideal Solution: {distance_to_ideal}")
+    st.write(f"Distance to Negative-Ideal Solution: {distance_to_negative_ideal}")
+    
     # Calculate the TOPSIS score
     topsis_score = distance_to_negative_ideal / (distance_to_ideal + distance_to_negative_ideal)
+    
+    st.subheader("Step 5: TOPSIS Score Calculation")
+    st.write(f"TOPSIS Scores: {topsis_score}")
     
     return topsis_score
 
@@ -87,13 +104,16 @@ if uploaded_file is not None:
 
         # Visualization of the rankings
         st.subheader('Bar Chart of TOPSIS Rankings')
-        chart = st.bar_chart(ranking_df.set_index('Alternative')['TOPSIS Score'])
 
-        # Add axis titles and chart title
-        st.write("""
-            - **Title**: **TOPSIS Rankings of Alternatives**
-            - **X-Axis**: **Alternatives**
-            - **Y-Axis**: **TOPSIS Score**
+        # Create the bar chart with title and axis labels
+        chart = ranking_df.set_index('Alternative')['TOPSIS Score']
+        st.bar_chart(chart)
+
+        st.markdown("""
+            **Chart Details**:
+            - **X-axis**: Alternatives (Projects/Entities)
+            - **Y-axis**: TOPSIS Score (Performance ranking based on sustainability)
+            - **Title**: TOPSIS Ranking of Alternatives based on Sustainability
         """)
 else:
     st.info('Please upload a CSV or Excel file to get started.')
