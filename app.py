@@ -8,13 +8,11 @@ def normalize_data(df):
     scaler = MinMaxScaler()
     norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
-    norm_df['Alternatives'] = df.index  # Add Alternatives column
     return norm_df
 
 # Function for Weighted Normalization
 def weighted_normalization(norm_df, weights):
-    weighted_matrix = norm_df.iloc[:, :-1] * weights  # Exclude Alternatives column for multiplication
-    weighted_matrix['Alternatives'] = norm_df['Alternatives']  # Add Alternatives column
+    weighted_matrix = norm_df * weights
     return weighted_matrix
 
 # Function to calculate Ideal Solutions (A+ and A-)
@@ -26,17 +24,13 @@ def calculate_ideal_solutions(weighted_matrix, impacts):
         pis = weighted_matrix.min()  # Positive Ideal Solution (Best values for costs)
         nis = weighted_matrix.max()  # Negative Ideal Solution (Worst values for costs)
     
-    pis['Alternatives'] = 'PIS'  # Label for Positive Ideal Solution
-    nis['Alternatives'] = 'NIS'  # Label for Negative Ideal Solution
     return pis, nis
 
 # Function to calculate the Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    pos_distance = np.sqrt(((weighted_matrix.iloc[:, :-1] - pis.iloc[:-1]) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
-    neg_distance = np.sqrt(((weighted_matrix.iloc[:, :-1] - nis.iloc[:-1]) ** 2).sum(axis=1))  # Si- (Distance to NIS)
-    
-    distance_df = pd.DataFrame({'Alternatives': weighted_matrix['Alternatives'], 'Si+': pos_distance, 'Si-': neg_distance})
-    return distance_df
+    pos_distance = np.sqrt(((weighted_matrix - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
+    neg_distance = np.sqrt(((weighted_matrix - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
+    return pos_distance, neg_distance
 
 # Function to calculate the TOPSIS Scores
 def calculate_topsis_score(pos_distance, neg_distance):
@@ -89,11 +83,12 @@ if uploaded_file is not None:
     st.write("Step 3: Negative Ideal Solution (A-)", nis)
     
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
-    distance_df = calculate_distances(weighted_matrix, pis, nis)
-    st.write("Step 4: Distances to PIS and NIS (Si+ and Si-)", distance_df)
+    pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
+    st.write("Step 4: Positive Ideal Solution Distance (Si+)", pos_distance)
+    st.write("Step 4: Negative Ideal Solution Distance (Si-)", neg_distance)
     
     # Step 5: Calculate TOPSIS Scores
-    topsis_score = calculate_topsis_score(distance_df['Si+'], distance_df['Si-'])
+    topsis_score = calculate_topsis_score(pos_distance, neg_distance)
     st.write("Step 5: TOPSIS Scores", topsis_score)
     
     # Add the TOPSIS Score to the DataFrame and handle NaN values
@@ -105,9 +100,10 @@ if uploaded_file is not None:
     
     # Reset the index and adjust the rank to start from 1
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
-    df = df.reset_index(drop=True)  # Reset the index to start from 0
+    df = df.reset_index(drop=False)  # Reset the index but keep alternatives (A1, A2, etc.) as part of the result
     
-    st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
+    # Display the final result, including alternatives (A1, A2, etc.)
+    st.write("Final Results with Alternatives:", df[['index', 'TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
     df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
