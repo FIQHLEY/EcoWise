@@ -110,8 +110,8 @@ if uploaded_file is not None:
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
     df = df.reset_index(drop=True)  # Reset the index to start from 0
     
-    # Debugging step: Check column names
-    st.write("Column Names in Final DataFrame:", df.columns)
+    # Debugging: Check the columns in the DataFrame
+    st.write("Columns in the DataFrame:", df.columns)
     
     # Display the final result: Alternatives, TOPSIS Score, Rank
     st.write("Final Results:", df[['Alternative', 'TOPSIS Score', 'Rank']])
