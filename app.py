@@ -84,6 +84,8 @@ if uploaded_file is not None:
     
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
     pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
+    
+    # Create a DataFrame for the distances (including alternatives)
     distance_df = pd.DataFrame({
         'Alternative': df.iloc[:, 0],  # Ensure alternatives column is included
         'Si+ (Distance to PIS)': pos_distance,
@@ -93,6 +95,8 @@ if uploaded_file is not None:
     
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
+    
+    # Create a DataFrame for the TOPSIS scores (including alternatives)
     topsis_df = pd.DataFrame({
         'Alternative': df.iloc[:, 0],  # Ensure alternatives column is included
         'TOPSIS Score': topsis_score
