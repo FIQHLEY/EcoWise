@@ -99,8 +99,8 @@ if uploaded_file is not None:
     df['Rank'] = df['TOPSIS Score'].rank(ascending=False, method='min')  # Rank the alternatives based on TOPSIS Score
     
     # Reset the index and adjust the rank to start from 1
-    df = df.reset_index(drop=True)  # Drop the old index
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
+    df = df.reset_index(drop=True)  # Reset the index to start from 0
     
     st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
     
