@@ -28,13 +28,16 @@ st.title('EcoWise: MCDM Sustainability Rankings with TOPSIS Methodology')
 
 st.sidebar.header('Input Criteria for Sustainability Ranking')
 
-# Option to upload a CSV file
-uploaded_file = st.sidebar.file_uploader("Upload a CSV file with your decision matrix", type=["csv"])
+# Option to upload a file (CSV or Excel)
+uploaded_file = st.sidebar.file_uploader("Upload a CSV or Excel file with your decision matrix", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
-    # Read the uploaded CSV file into a DataFrame
-    df = pd.read_csv(uploaded_file)
-    
+    # Check file extension to determine if it's CSV or Excel
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith(".xlsx"):
+        df = pd.read_excel(uploaded_file)
+
     # Display the uploaded decision matrix
     st.subheader('Uploaded Decision Matrix')
     st.dataframe(df)
@@ -69,5 +72,5 @@ if uploaded_file is not None:
         st.subheader('Bar Chart of TOPSIS Rankings')
         st.bar_chart(ranking_df.set_index('Alternative')['TOPSIS Score'])
 else:
-    st.info('Please upload a CSV file to get started.')
+    st.info('Please upload a CSV or Excel file to get started.')
 
