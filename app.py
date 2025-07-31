@@ -18,7 +18,7 @@ def topsis_method(data, weights, impacts):
         if impacts[j] == 'Benefit':
             ideal_solution[j] = np.max(weighted_data[:, j])
             negative_ideal_solution[j] = np.min(weighted_data[:, j])
-        else:
+        else:  # For 'Cost' criteria, invert the logic
             ideal_solution[j] = np.min(weighted_data[:, j])
             negative_ideal_solution[j] = np.max(weighted_data[:, j])
 
