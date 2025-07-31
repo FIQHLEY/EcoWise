@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
 
 # Function for Normalizing the data (Min-Max Scaling)
 def normalize_data(df):
@@ -118,10 +117,5 @@ if uploaded_file is not None:
     # Ensure sorting by Rank before charting
     df_sorted = df[['Alternative', 'TOPSIS Score', 'Rank']].sort_values(by='Rank')
     
-    # **Detailed Bar Chart** of TOPSIS Scores
-    fig, ax = plt.subplots(figsize=(10, 6))  # Adjusting figure size for clarity
-    ax.barh(df_sorted['Alternative'], df_sorted['TOPSIS Score'], color='skyblue')  # Horizontal bar chart
-    ax.set_xlabel('TOPSIS Score')  # Label for X-axis
-    ax.set_ylabel('Alternatives')  # Label for Y-axis
-    ax.set_title('TOPSIS Scores for Sustainability Alternatives')  # Title
-    st.pyplot(fig)  # Display the chart
+    # Displaying the bar chart of TOPSIS scores
+    st.bar_chart(df_sorted.set_index('Alternative')['TOPSIS Score'])  # Plot only the TOPSIS Score column
