@@ -43,27 +43,17 @@ if uploaded_file is not None:
     
     st.write("Data Preview:", df.head())
     
-    # Ensure that weights sum to 1
-    st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
+    # Setting weight sliders for each criterion (no normalization or sum to 1)
+    st.sidebar.header("Set Criteria Weights")
     criteria = df.columns[1:]  # All columns except the first column (alternatives)
-    weights = [0.0] * len(criteria)  # Initialize weights as zero
+    weights = []  # Initialize an empty list for weights
     
-    # Dynamically adjust weights based on total weight remaining
-    remaining_weight = 1.0  # Start with total weight 1.0
+    # Create a slider for each criterion (no weight sum restriction)
+    for criterion in criteria:
+        weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.0)
+        weights.append(weight)
     
-    # Create sliders for each criterion, ensuring the total doesn't exceed 1
-    for i, criterion in enumerate(criteria):
-        if i == len(criteria) - 1:
-            weights[i] = remaining_weight  # The last slider takes the remaining weight
-            st.sidebar.slider(f"Weight for {criterion}", 0.0, remaining_weight, remaining_weight)
-        else:
-            max_weight = remaining_weight  # Set the maximum weight to the remaining weight
-            weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, max_weight, 0.0)
-            weights[i] = weight
-            remaining_weight -= weight  # Subtract from remaining weight
-    
-    weights_sum = sum(weights)
-    weights = np.array([w / weights_sum for w in weights])  # Normalize the weights
+    weights = np.array(weights)  # Convert weights to a numpy array
     
     # User input for impacts (Benefit or Cost)
     impacts = []
