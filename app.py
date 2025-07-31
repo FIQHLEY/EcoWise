@@ -7,10 +7,10 @@ from sklearn.preprocessing import MinMaxScaler
 def topsis_method(df, weights, impacts):
     # Normalize the decision matrix (skip the index/first column)
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])
+    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Exclude the first column (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
     
-    # Weighted normalized matrix
+    # Ensure the weights are aligned with the criteria columns
     weighted_matrix = norm_df * weights
     
     # Positive and negative ideal solutions
@@ -45,7 +45,7 @@ if uploaded_file is not None:
     
     # Ensure that weights sum to 1
     st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
-    criteria = df.columns  # All columns are now criteria
+    criteria = df.columns[1:]  # All columns except the first column (alternatives)
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
     # User input for weights, ensuring the sum of weights equals 1
