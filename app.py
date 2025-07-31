@@ -3,39 +3,34 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-# Step 1: Data Normalization
+# Step 1: Data Normalization (Min-Max)
 def normalize_data(df):
-    # Normalize the data using MinMaxScaler
     scaler = MinMaxScaler()
-    normalized_data = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the index (alternatives)
-    normalized_df = pd.DataFrame(normalized_data, columns=df.columns[1:])
-    
-    return normalized_df
+    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
+    norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
+    return norm_df
 
 # Step 2: Weighted Normalization
-def weighted_normalization(normalized_df, weights):
-    # Element-wise multiplication of the normalized data by weights
-    weighted_matrix = normalized_df * weights
+def weighted_normalization(norm_df, weights):
+    weighted_matrix = norm_df * weights
     return weighted_matrix
 
-# Step 3: Calculate Ideal and Negative Ideal Solutions
+# Step 3: Ideal Solutions (A+ and A-)
 def calculate_ideal_solutions(weighted_matrix, impacts):
-    # Positive Ideal Solution (PIS) and Negative Ideal Solution (NIS)
+    # Calculate the Positive Ideal Solution (PIS) and Negative Ideal Solution (NIS)
     if impacts == 'Benefit':
         pis = weighted_matrix.max()  # Best values for benefit criteria
         nis = weighted_matrix.min()  # Worst values for benefit criteria
     else:
         pis = weighted_matrix.min()  # Best values for cost criteria
         nis = weighted_matrix.max()  # Worst values for cost criteria
-        
     return pis, nis
 
-# Step 4: Calculate the Euclidean Distance to PIS and NIS
+# Step 4: Calculate Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    # Euclidean distance from PIS and NIS
-    pos_distance = np.sqrt(((weighted_matrix - pis) ** 2).sum(axis=1))
-    neg_distance = np.sqrt(((weighted_matrix - nis) ** 2).sum(axis=1))
-    
+    # Calculate distances to PIS and NIS
+    pos_distance = np.sqrt(((weighted_matrix - pis) ** 2).sum(axis=1))  # Si+
+    neg_distance = np.sqrt(((weighted_matrix - nis) ** 2).sum(axis=1))  # Si-
     return pos_distance, neg_distance
 
 # Step 5: Calculate TOPSIS Scores
@@ -84,15 +79,15 @@ if uploaded_file is not None:
     weighted_matrix = weighted_normalization(normalized_df, weights)
     st.write("Step 2: Weighted Normalized Matrix", weighted_matrix)
     
-    # Step 3: Calculate Ideal and Negative Ideal Solutions
+    # Step 3: Calculate Ideal and Negative Ideal Solutions (A+ and A-)
     pis, nis = calculate_ideal_solutions(weighted_matrix, impacts[0])  # Assuming impacts are the same for all criteria
-    st.write("Step 3: Positive Ideal Solution (PIS)", pis)
-    st.write("Step 3: Negative Ideal Solution (NIS)", nis)
+    st.write("Step 3: Positive Ideal Solution (A+)", pis)
+    st.write("Step 3: Negative Ideal Solution (A-)", nis)
     
-    # Step 4: Calculate Distances to PIS and NIS
+    # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
     pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
-    st.write("Step 4: Positive Ideal Solution Distance", pos_distance)
-    st.write("Step 4: Negative Ideal Solution Distance", neg_distance)
+    st.write("Step 4: Positive Ideal Solution Distance (Si+)", pos_distance)
+    st.write("Step 4: Negative Ideal Solution Distance (Si-)", neg_distance)
     
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
