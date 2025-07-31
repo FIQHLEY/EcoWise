@@ -45,7 +45,7 @@ if uploaded_file is not None:
     
     # Ensure that weights sum to 1
     st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
-    criteria = df.columns[1:]  # All columns except the first column (alternatives)
+    criteria = df.columns  # All columns except the first column (alternatives)
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
     # User input for weights, ensuring the sum of weights equals 1
@@ -69,6 +69,10 @@ if uploaded_file is not None:
     # Compute TOPSIS scores
     if st.button('Calculate Rankings'):
         df['TOPSIS Score'] = topsis_method(df, weights, impacts)
-        df['Rank'] = df['TOPSIS Score'].rank(ascending=False)
+        df['Rank'] = df['TOPSIS Score'].rank(ascending=False)  # Rank the alternatives based on TOPSIS Score
         st.write("Results:", df[['TOPSIS Score', 'Rank']])
-        st.bar_chart(df[['TOPSIS Score']].sort_values('Rank'))
+        
+        # Ensure sorting by Rank before charting
+        df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
+        
+        st.bar_chart(df_sorted[['TOPSIS Score']])  # Plot only the TOPSIS Score
