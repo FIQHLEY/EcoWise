@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 # Function for Normalizing the data (Min-Max Scaling)
 def normalize_data(df):
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first column (alternatives)
+    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
     return norm_df
 
@@ -96,7 +96,12 @@ if uploaded_file is not None:
     df = df.dropna(subset=['TOPSIS Score'])  # Drop rows with NaN TOPSIS Score
     
     # Rank the alternatives based on TOPSIS Score
-    df['Rank'] = df['TOPSIS Score'].rank(ascending=False)  # Rank the alternatives based on TOPSIS Score
+    df['Rank'] = df['TOPSIS Score'].rank(ascending=False, method='min')  # Rank the alternatives based on TOPSIS Score
+    
+    # Reset the index and adjust the rank to start from 1
+    df = df.reset_index(drop=True)  # Drop the old index
+    df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
+    
     st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
