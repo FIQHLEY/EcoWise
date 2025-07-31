@@ -30,17 +30,10 @@ def calculate_ideal_solutions(weighted_matrix, impacts):
 
 # Function to calculate the Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    # Broadcast the PIS and NIS to match the shape of weighted_matrix
-    pis_broadcasted = np.broadcast_to(pis, weighted_matrix.iloc[:, 1:].shape)  # Broadcast PIS to match matrix shape
-    nis_broadcasted = np.broadcast_to(nis, weighted_matrix.iloc[:, 1:].shape)  # Broadcast NIS to match matrix shape
-    
-    # Calculate the Euclidean distance for both PIS and NIS
-    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - pis_broadcasted) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
-    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - nis_broadcasted) ** 2).sum(axis=1))  # Si- (Distance to NIS)
-    
+    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
+    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
     weighted_matrix['Si+'] = pos_distance  # Add Si+ to the weighted matrix
     weighted_matrix['Si-'] = neg_distance  # Add Si- to the weighted matrix
-    
     return pos_distance, neg_distance, weighted_matrix
 
 # Function to calculate the TOPSIS Scores
