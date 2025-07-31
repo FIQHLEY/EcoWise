@@ -5,20 +5,14 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Function for Normalizing the data (Min-Max Scaling)
 def normalize_data(df):
-    # Normalize all columns except the first one (Alternatives)
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
-    
-    # Insert the original row names as the 'Alternatives' column
+    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first column (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
-    norm_df.insert(0, 'Alternatives', df.index)  # Insert the original alternative names from the DataFrame index
-    
     return norm_df
 
 # Function for Weighted Normalization
 def weighted_normalization(norm_df, weights):
-    weighted_matrix = norm_df.iloc[:, 1:].multiply(weights, axis=1)  # Multiply normalized data by weights
-    weighted_matrix.insert(0, 'Alternatives', norm_df['Alternatives'])  # Add Alternatives column back
+    weighted_matrix = norm_df * weights
     return weighted_matrix
 
 # Function to calculate Ideal Solutions (A+ and A-)
@@ -34,11 +28,9 @@ def calculate_ideal_solutions(weighted_matrix, impacts):
 
 # Function to calculate the Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
-    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
-    weighted_matrix['Si+'] = pos_distance  # Add Si+ to the weighted matrix
-    weighted_matrix['Si-'] = neg_distance  # Add Si- to the weighted matrix
-    return pos_distance, neg_distance, weighted_matrix
+    pos_distance = np.sqrt(((weighted_matrix - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
+    neg_distance = np.sqrt(((weighted_matrix - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
+    return pos_distance, neg_distance
 
 # Function to calculate the TOPSIS Scores
 def calculate_topsis_score(pos_distance, neg_distance):
@@ -91,27 +83,24 @@ if uploaded_file is not None:
     st.write("Step 3: Negative Ideal Solution (A-)", nis)
     
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
-    pos_distance, neg_distance, weighted_matrix_with_distances = calculate_distances(weighted_matrix, pis, nis)
-    st.write("Step 4: Distances to PIS and NIS", weighted_matrix_with_distances)
+    pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
+    st.write("Step 4: Positive Ideal Solution Distance (Si+)", pos_distance)
+    st.write("Step 4: Negative Ideal Solution Distance (Si-)", neg_distance)
     
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
     st.write("Step 5: TOPSIS Scores", topsis_score)
     
     # Add the TOPSIS Score to the DataFrame and handle NaN values
-    weighted_matrix_with_distances['TOPSIS Score'] = topsis_score
-    weighted_matrix_with_distances = weighted_matrix_with_distances.dropna(subset=['TOPSIS Score'])  # Drop rows with NaN TOPSIS Score
+    df['TOPSIS Score'] = topsis_score
+    df = df.dropna(subset=['TOPSIS Score'])  # Drop rows with NaN TOPSIS Score
     
     # Rank the alternatives based on TOPSIS Score
-    weighted_matrix_with_distances['Rank'] = weighted_matrix_with_distances['TOPSIS Score'].rank(ascending=False, method='min')  # Rank the alternatives based on TOPSIS Score
-    
-    # Ensure index starts from 1
-    weighted_matrix_with_distances['Rank'] = weighted_matrix_with_distances['Rank'].astype(int)
-    
-    st.write("Final Results:", weighted_matrix_with_distances[['Alternatives', 'TOPSIS Score', 'Rank']])
+    df['Rank'] = df['TOPSIS Score'].rank(ascending=False)  # Rank the alternatives based on TOPSIS Score
+    st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
-    df_sorted = weighted_matrix_with_distances[['Alternatives', 'TOPSIS Score', 'Rank']].sort_values(by='Rank')
+    df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
     
     # Displaying the bar chart of TOPSIS scores
     st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
