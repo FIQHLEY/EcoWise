@@ -7,8 +7,8 @@ from sklearn.preprocessing import MinMaxScaler
 def topsis_method(df, weights, impacts):
     # Normalize the decision matrix (skip the index/first column)
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Exclude the first column (alternatives)
-    norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
+    norm_df = scaler.fit_transform(df.iloc[:, :])  # Including all columns for normalization
+    norm_df = pd.DataFrame(norm_df, columns=df.columns[:])
     
     # Ensure the weights are aligned with the criteria columns
     weighted_matrix = norm_df.multiply(weights, axis=1)  # Use axis=1 for column-wise multiplication
@@ -45,7 +45,7 @@ if uploaded_file is not None:
     
     # Setting weight sliders for each criterion (no normalization or sum to 1)
     st.sidebar.header("Set Criteria Weights")
-    criteria = df.columns[1:]  # All columns except the first column (alternatives)
+    criteria = df.columns[:]
     weights = []  # Initialize an empty list for weights
     
     # Create a slider for each criterion (no weight sum restriction)
@@ -70,5 +70,4 @@ if uploaded_file is not None:
         # Ensure sorting by Rank before charting
         df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
         
-        # Pass the correct column to the bar chart function
-        st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
+        st.bar_chart(df_sorted[['TOPSIS Score']])  # Plot only the TOPSIS Score
