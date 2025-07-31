@@ -3,27 +3,38 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-# Function for TOPSIS calculation
-def topsis_method(df, weights, impacts):
-    # Normalize the decision matrix (skip the index/first column)
+# Function for Normalizing the data (Min-Max Scaling)
+def normalize_data(df):
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Exclude the first column (alternatives)
+    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first column (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
+    return norm_df
+
+# Function for Weighted Normalization
+def weighted_normalization(norm_df, weights):
+    weighted_matrix = norm_df * weights
+    return weighted_matrix
+
+# Function to calculate Ideal Solutions (A+ and A-)
+def calculate_ideal_solutions(weighted_matrix, impacts):
+    if impacts == 'Benefit':
+        pis = weighted_matrix.max()  # Positive Ideal Solution (Best values for benefits)
+        nis = weighted_matrix.min()  # Negative Ideal Solution (Worst values for benefits)
+    else:
+        pis = weighted_matrix.min()  # Positive Ideal Solution (Best values for costs)
+        nis = weighted_matrix.max()  # Negative Ideal Solution (Worst values for costs)
     
-    # Ensure the weights are aligned with the criteria columns
-    weighted_matrix = norm_df * weights  # Perform element-wise multiplication
-    
-    # Positive and negative ideal solutions
-    pos_ideal = weighted_matrix.max() if impacts == 'Benefit' else weighted_matrix.min()
-    neg_ideal = weighted_matrix.min() if impacts == 'Benefit' else weighted_matrix.max()
-    
-    # Euclidean distance from ideal solutions
-    pos_distance = np.sqrt(((weighted_matrix - pos_ideal) ** 2).sum(axis=1))
-    neg_distance = np.sqrt(((weighted_matrix - neg_ideal) ** 2).sum(axis=1))
-    
-    # Calculate the TOPSIS score
-    topsis_score = neg_distance / (pos_distance + neg_distance)
-    
+    return pis, nis
+
+# Function to calculate the Euclidean Distances (Si+ and Si-)
+def calculate_distances(weighted_matrix, pis, nis):
+    pos_distance = np.sqrt(((weighted_matrix - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
+    neg_distance = np.sqrt(((weighted_matrix - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
+    return pos_distance, neg_distance
+
+# Function to calculate the TOPSIS Scores
+def calculate_topsis_score(pos_distance, neg_distance):
+    topsis_score = neg_distance / (pos_distance + neg_distance)  # TOPSIS Score formula
     return topsis_score
 
 # Streamlit UI for input and result display
