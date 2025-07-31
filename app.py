@@ -86,10 +86,18 @@ if uploaded_file is not None:
         weighted_df = pd.DataFrame(weighted_data, columns=[f'Criterion {i+1}' for i in range(df.shape[1] - 1)], index=df.iloc[:, 0])
         st.write(weighted_df)
 
-        # Step 6: Display Ideal and Negative-Ideal Solutions
+        # Step 6: Display Ideal and Negative-Ideal Solutions in a Table
         st.subheader('Step 3: Ideal and Negative-Ideal Solutions')
-        st.write(f"Ideal Solution (A+): {ideal_solution}")
-        st.write(f"Negative-Ideal Solution (A-): {negative_ideal_solution}")
+
+        # Create a DataFrame to display Ideal and Negative-Ideal solutions in a table
+        ideal_negative_ideal_df = pd.DataFrame({
+            'Criterion': [f'Criterion {i+1}' for i in range(df.shape[1] - 1)],
+            'Impact': impacts,
+            'Ideal Solution (A+)': ideal_solution,
+            'Negative-Ideal Solution (A-)': negative_ideal_solution
+        })
+
+        st.write(ideal_negative_ideal_df)
 
         # Step 7: Display the Euclidean distances
         st.subheader('Step 4: Euclidean Distance to Ideal and Negative-Ideal Solutions')
