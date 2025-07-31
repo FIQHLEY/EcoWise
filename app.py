@@ -37,11 +37,15 @@ if uploaded_file is not None:
     else:
         df = pd.read_excel(uploaded_file, engine='openpyxl')
     
+    # Correcting the reading of data
+    if 'Unnamed: 0' in df.columns:
+        df.set_index('Unnamed: 0', inplace=True)
+    
     st.write("Data Preview:", df.head())
     
     # Ensure that weights sum to 1
     st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
-    criteria = df.columns[1:]  # Skip the Name column (alternatives)
+    criteria = df.columns  # All columns are now criteria
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
     # User input for weights, ensuring the sum of weights equals 1
@@ -66,5 +70,5 @@ if uploaded_file is not None:
     if st.button('Calculate Rankings'):
         df['TOPSIS Score'] = topsis_method(df, weights, impacts)
         df['Rank'] = df['TOPSIS Score'].rank(ascending=False)
-        st.write("Results:", df[['Name', 'TOPSIS Score', 'Rank']])
+        st.write("Results:", df[['TOPSIS Score', 'Rank']])
         st.bar_chart(df[['TOPSIS Score']].sort_values('Rank'))
