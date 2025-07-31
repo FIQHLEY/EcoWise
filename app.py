@@ -44,22 +44,17 @@ if uploaded_file is not None:
     st.write("Data Preview:", df.head())
     
     # Ensure that weights sum to 1
-    st.sidebar.header("Set Criteria Weights")
+    st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
     criteria = df.columns[1:]  # All columns except the first column (alternatives)
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
-    # Create sliders for each criterion
-    total_weight = 1.0  # Start with total weight of 1.0
-    for i, criterion in enumerate(criteria[:-1]):
-        max_weight = total_weight - sum(weights)
-        weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, max_weight, 0.0)
-        weights[i] = weight
-    
-    # Set the remaining weight for the last criterion to ensure the sum equals 1
-    weights[-1] = 1.0 - sum(weights)
+    # Allow the user to input weights freely for all criteria, including C1
+    for i, criterion in enumerate(criteria):
+        weights[i] = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.0)
     
     # Normalize weights to ensure their sum equals 1
-    weights = np.array([w / sum(weights) for w in weights])  # Normalize the weights
+    weights_sum = sum(weights)
+    weights = np.array([w / weights_sum for w in weights])  # Normalize the weights
     
     # User input for impacts (Benefit or Cost)
     impacts = []
