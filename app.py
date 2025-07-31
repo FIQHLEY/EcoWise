@@ -8,9 +8,7 @@ def normalize_data(df):
     scaler = MinMaxScaler()
     norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
-    
-    # Add alternatives as A1, A2, ..., A14
-    norm_df.insert(0, 'Alternatives', [f'A{i+1}' for i in range(len(df))])
+    norm_df.insert(0, 'Alternatives', df.index)  # Insert the 'Alternatives' column at the beginning
     return norm_df
 
 # Function for Weighted Normalization
@@ -32,14 +30,8 @@ def calculate_ideal_solutions(weighted_matrix, impacts):
 
 # Function to calculate the Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    # Ensure pis and nis are numpy arrays and broadcast them for element-wise subtraction
-    pis = np.array(pis)
-    nis = np.array(nis)
-    
-    # Calculate the Euclidean distance to the PIS and NIS
-    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:].values - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
-    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:].values - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
-    
+    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
+    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
     weighted_matrix['Si+'] = pos_distance  # Add Si+ to the weighted matrix
     weighted_matrix['Si-'] = neg_distance  # Add Si- to the weighted matrix
     return pos_distance, neg_distance, weighted_matrix
