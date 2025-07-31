@@ -5,13 +5,15 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Function for Normalizing the data (Min-Max Scaling)
 def normalize_data(df):
+    # Normalize all columns except the first column (alternatives)
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
-    norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
+    norm_data = scaler.fit_transform(df.iloc[:, 1:])  # All criteria columns
+    norm_df = pd.DataFrame(norm_data, columns=df.columns[1:], index=df.index)  # Retain alternatives (index)
     return norm_df
 
 # Function for Weighted Normalization
 def weighted_normalization(norm_df, weights):
+    # Element-wise multiplication of normalized data by weights
     weighted_matrix = norm_df * weights
     return weighted_matrix
 
@@ -71,11 +73,11 @@ if uploaded_file is not None:
     
     # Step 1: Normalize the data
     normalized_df = normalize_data(df)
-    st.write("Step 1: Normalized Data", normalized_df)
+    st.write("Step 1: Normalized Data (Alternatives Included)", normalized_df)
 
     # Step 2: Weighted Normalization
     weighted_matrix = weighted_normalization(normalized_df, weights)
-    st.write("Step 2: Weighted Normalized Matrix", weighted_matrix)
+    st.write("Step 2: Weighted Normalized Matrix (Alternatives Included)", weighted_matrix)
     
     # Step 3: Calculate Ideal and Negative Ideal Solutions (A+ and A-)
     pis, nis = calculate_ideal_solutions(weighted_matrix, impacts[0])  # Assuming impacts are the same for all criteria
@@ -84,12 +86,12 @@ if uploaded_file is not None:
     
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
     pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
-    st.write("Step 4: Positive Ideal Solution Distance (Si+)", pos_distance)
-    st.write("Step 4: Negative Ideal Solution Distance (Si-)", neg_distance)
+    st.write("Step 4: Positive Ideal Solution Distance (Si+) (Alternatives Included)", pos_distance)
+    st.write("Step 4: Negative Ideal Solution Distance (Si-) (Alternatives Included)", neg_distance)
     
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
-    st.write("Step 5: TOPSIS Scores", topsis_score)
+    st.write("Step 5: TOPSIS Scores (Alternatives Included)", topsis_score)
     
     # Add the TOPSIS Score to the DataFrame and handle NaN values
     df['TOPSIS Score'] = topsis_score
@@ -102,7 +104,7 @@ if uploaded_file is not None:
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
     df = df.reset_index(drop=True)  # Reset the index to start from 0
     
-    st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
+    st.write("Final Results (Including Alternatives and Ranks):", df[['TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
     df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
