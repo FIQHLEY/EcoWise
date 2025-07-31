@@ -3,40 +3,27 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-# Step 1: Data Normalization (Min-Max)
-def normalize_data(df):
+# Function for TOPSIS calculation
+def topsis_method(df, weights, impacts):
+    # Normalize the decision matrix (skip the index/first column)
     scaler = MinMaxScaler()
-    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
+    norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Exclude the first column (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
-    return norm_df
-
-# Step 2: Weighted Normalization
-def weighted_normalization(norm_df, weights):
-    weighted_matrix = norm_df * weights
-    return weighted_matrix
-
-# Step 3: Ideal Solutions (A+ and A-)
-def calculate_ideal_solutions(weighted_matrix, impacts):
-    # Calculate the Positive Ideal Solution (PIS) and Negative Ideal Solution (NIS)
-    if impacts == 'Benefit':
-        pis = weighted_matrix.max()  # Best values for benefit criteria
-        nis = weighted_matrix.min()  # Worst values for benefit criteria
-    else:
-        pis = weighted_matrix.min()  # Best values for cost criteria
-        nis = weighted_matrix.max()  # Worst values for cost criteria
-    return pis, nis
-
-# Step 4: Calculate Euclidean Distances (Si+ and Si-)
-def calculate_distances(weighted_matrix, pis, nis):
-    # Calculate distances to PIS and NIS
-    pos_distance = np.sqrt(((weighted_matrix - pis) ** 2).sum(axis=1))  # Si+
-    neg_distance = np.sqrt(((weighted_matrix - nis) ** 2).sum(axis=1))  # Si-
-    return pos_distance, neg_distance
-
-# Step 5: Calculate TOPSIS Scores
-def calculate_topsis_score(pos_distance, neg_distance):
-    # TOPSIS score calculation
+    
+    # Ensure the weights are aligned with the criteria columns
+    weighted_matrix = norm_df * weights  # Perform element-wise multiplication
+    
+    # Positive and negative ideal solutions
+    pos_ideal = weighted_matrix.max() if impacts == 'Benefit' else weighted_matrix.min()
+    neg_ideal = weighted_matrix.min() if impacts == 'Benefit' else weighted_matrix.max()
+    
+    # Euclidean distance from ideal solutions
+    pos_distance = np.sqrt(((weighted_matrix - pos_ideal) ** 2).sum(axis=1))
+    neg_distance = np.sqrt(((weighted_matrix - neg_ideal) ** 2).sum(axis=1))
+    
+    # Calculate the TOPSIS score
     topsis_score = neg_distance / (pos_distance + neg_distance)
+    
     return topsis_score
 
 # Streamlit UI for input and result display
@@ -93,10 +80,16 @@ if uploaded_file is not None:
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
     st.write("Step 5: TOPSIS Scores", topsis_score)
     
-    # Rank the alternatives based on TOPSIS Score
+    # Add the TOPSIS Score to the DataFrame and handle NaN values
     df['TOPSIS Score'] = topsis_score
+    df = df.dropna(subset=['TOPSIS Score'])  # Drop rows with NaN TOPSIS Score
+    
+    # Rank the alternatives based on TOPSIS Score
     df['Rank'] = df['TOPSIS Score'].rank(ascending=False)  # Rank the alternatives based on TOPSIS Score
     st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
     
+    # Ensure sorting by Rank before charting
+    df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
+    
     # Displaying the bar chart of TOPSIS scores
-    st.bar_chart(df[['TOPSIS Score']].sort_values('Rank'))
+    st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
