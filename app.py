@@ -32,8 +32,14 @@ def calculate_ideal_solutions(weighted_matrix, impacts):
 
 # Function to calculate the Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
-    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:] - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
+    # Align the pis and nis to match the shape of the weighted matrix
+    pis = pis.values
+    nis = nis.values
+    
+    # Calculate the Euclidean distance to the PIS and NIS
+    pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:].values - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
+    neg_distance = np.sqrt(((weighted_matrix.iloc[:, 1:].values - nis) ** 2).sum(axis=1))  # Si- (Distance to NIS)
+    
     weighted_matrix['Si+'] = pos_distance  # Add Si+ to the weighted matrix
     weighted_matrix['Si-'] = neg_distance  # Add Si- to the weighted matrix
     return pos_distance, neg_distance, weighted_matrix
