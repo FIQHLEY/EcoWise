@@ -8,7 +8,7 @@ def normalize_data(df):
     scaler = MinMaxScaler()
     norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Normalize all columns except the first one (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
-    norm_df.insert(0, 'Alternatives', df.index)  # Insert the 'Alternatives' column at the beginning
+    norm_df.insert(0, 'Alternatives', df.index)  # Insert the original 'Alternatives' column at the beginning
     return norm_df
 
 # Function for Weighted Normalization
