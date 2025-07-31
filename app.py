@@ -71,11 +71,11 @@ if uploaded_file is not None:
     
     # Step 1: Normalize the data
     normalized_df = normalize_data(df)
-    st.write("Step 1: Normalized Data", normalized_df)
+    st.write("Step 1: Normalized Data", pd.concat([df.iloc[:, 0], normalized_df], axis=1))
 
     # Step 2: Weighted Normalization
     weighted_matrix = weighted_normalization(normalized_df, weights)
-    st.write("Step 2: Weighted Normalized Matrix", weighted_matrix)
+    st.write("Step 2: Weighted Normalized Matrix", pd.concat([df.iloc[:, 0], weighted_matrix], axis=1))
     
     # Step 3: Calculate Ideal and Negative Ideal Solutions (A+ and A-)
     pis, nis = calculate_ideal_solutions(weighted_matrix, impacts[0])  # Assuming impacts are the same for all criteria
@@ -84,12 +84,19 @@ if uploaded_file is not None:
     
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
     pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
-    st.write("Step 4: Positive Ideal Solution Distance (Si+)", pos_distance)
-    st.write("Step 4: Negative Ideal Solution Distance (Si-)", neg_distance)
+    distance_df = pd.DataFrame({
+        'Alternative': df.iloc[:, 0],
+        'Si+ (Distance to PIS)': pos_distance,
+        'Si- (Distance to NIS)': neg_distance
+    })
+    st.write("Step 4: Distances to PIS and NIS", distance_df)
     
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
-    st.write("Step 5: TOPSIS Scores", topsis_score)
+    st.write("Step 5: TOPSIS Scores", pd.DataFrame({
+        'Alternative': df.iloc[:, 0],
+        'TOPSIS Score': topsis_score
+    }))
     
     # Add the TOPSIS Score to the DataFrame and handle NaN values
     df['TOPSIS Score'] = topsis_score
@@ -100,13 +107,12 @@ if uploaded_file is not None:
     
     # Reset the index and adjust the rank to start from 1
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
-    df = df.reset_index(drop=False)  # Reset the index but keep alternatives (A1, A2, etc.) as part of the result
+    df = df.reset_index(drop=True)  # Reset the index to start from 0
     
-    # Display the final result, including alternatives (A1, A2, etc.)
-    st.write("Final Results with Alternatives:", df[['index', 'TOPSIS Score', 'Rank']])
+    st.write("Final Results:", df[['Alternative', 'TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
-    df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
+    df_sorted = df[['Alternative', 'TOPSIS Score', 'Rank']].sort_values(by='Rank')
     
     # Displaying the bar chart of TOPSIS scores
-    st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
+    st.bar_chart(df_sorted.set_index('Alternative')['TOPSIS Score'])  # Plot only the TOPSIS Score column
