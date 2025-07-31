@@ -44,24 +44,15 @@ if uploaded_file is not None:
     st.write("Data Preview:", df.head())
     
     # Ensure that weights sum to 1
-    st.sidebar.header("Set Criteria Weights")
+    st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
     criteria = df.columns[1:]  # All columns except the first column (alternatives)
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
-    # Dynamically adjust weights based on total weight remaining
-    remaining_weight = 1.0  # Start with total weight 1.0
-    
-    # Create sliders for each criterion, ensuring the total doesn't exceed 1
+    # Allow the user to input weights freely
     for i, criterion in enumerate(criteria):
-        if i == len(criteria) - 1:
-            weights[i] = remaining_weight  # The last slider takes the remaining weight
-            st.sidebar.slider(f"Weight for {criterion}", 0.0, remaining_weight, remaining_weight)
-        else:
-            max_weight = remaining_weight  # Set the maximum weight to the remaining weight
-            weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, max_weight, 0.0)
-            weights[i] = weight
-            remaining_weight -= weight  # Subtract from remaining weight
+        weights[i] = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.0)
     
+    # Normalize weights to ensure their sum equals 1
     weights_sum = sum(weights)
     weights = np.array([w / weights_sum for w in weights])  # Normalize the weights
     
@@ -77,3 +68,7 @@ if uploaded_file is not None:
         df['Rank'] = df['TOPSIS Score'].rank(ascending=False)  # Rank the alternatives based on TOPSIS Score
         st.write("Results:", df[['TOPSIS Score', 'Rank']])
         
+        # Ensure sorting by Rank before charting
+        df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
+        
+        st.bar_chart(df_sorted[['TOPSIS Score']])  # Plot only the TOPSIS Score
