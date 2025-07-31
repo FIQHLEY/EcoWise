@@ -10,7 +10,7 @@ def topsis_method(df, weights, impacts):
     norm_df = scaler.fit_transform(df.iloc[:, 1:])  # Exclude the first column (alternatives)
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
     
-    # Ensure weights align with the criteria columns (C1, C2, C3, ...)
+    # Ensure the weights are aligned with the criteria columns
     weighted_matrix = norm_df * weights  # Perform element-wise multiplication
     
     # Positive and negative ideal solutions
@@ -70,4 +70,10 @@ if uploaded_file is not None:
         # Ensure sorting by Rank before charting
         df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
         
-        st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
+        # Check if there are NaN values and handle them
+        if df_sorted['TOPSIS Score'].isnull().any():
+            st.error("There are missing values in the TOPSIS Score column!")
+        else:
+            # Ensure 'TOPSIS Score' is a numeric column before plotting
+            df_sorted['TOPSIS Score'] = pd.to_numeric(df_sorted['TOPSIS Score'], errors='coerce')
+            st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
