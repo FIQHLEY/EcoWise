@@ -48,7 +48,7 @@ if uploaded_file is not None:
     criteria = df.columns[1:]  # All columns except the first column (alternatives)
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
-    # Allow the user to input weights freely
+    # Allow the user to input weights freely for all criteria, including C1
     for i, criterion in enumerate(criteria):
         weights[i] = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.0)
     
