@@ -32,9 +32,9 @@ def calculate_ideal_solutions(weighted_matrix, impacts):
 
 # Function to calculate the Euclidean Distances (Si+ and Si-)
 def calculate_distances(weighted_matrix, pis, nis):
-    # Align the pis and nis to match the shape of the weighted matrix
-    pis = pis.values
-    nis = nis.values
+    # Ensure pis and nis are numpy arrays and broadcast them for element-wise subtraction
+    pis = np.array(pis)
+    nis = np.array(nis)
     
     # Calculate the Euclidean distance to the PIS and NIS
     pos_distance = np.sqrt(((weighted_matrix.iloc[:, 1:].values - pis) ** 2).sum(axis=1))  # Si+ (Distance to PIS)
