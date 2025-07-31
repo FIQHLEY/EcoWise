@@ -87,6 +87,13 @@ if uploaded_file is not None:
 
         # Visualization of the rankings
         st.subheader('Bar Chart of TOPSIS Rankings')
-        st.bar_chart(ranking_df.set_index('Alternative')['TOPSIS Score'])
+        chart = st.bar_chart(ranking_df.set_index('Alternative')['TOPSIS Score'])
+
+        # Add axis titles and chart title
+        st.write("""
+            - **Title**: **TOPSIS Rankings of Alternatives**
+            - **X-Axis**: **Alternatives**
+            - **Y-Axis**: **TOPSIS Score**
+        """)
 else:
     st.info('Please upload a CSV or Excel file to get started.')
