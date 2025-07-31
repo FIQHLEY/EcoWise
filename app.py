@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
 
 # Function for Normalizing the data (Min-Max Scaling)
 def normalize_data(df):
@@ -51,9 +52,12 @@ if uploaded_file is not None:
     # Display the dataset preview
     st.write("Data Preview:", df.head())
     
+    # Add the 'Alternative' column from the index to the DataFrame
+    df['Alternative'] = df.index  # Add alternatives column based on index
+    
     # Setting weight sliders for each criterion
     st.sidebar.header("Set Criteria Weights")
-    criteria = df.columns[1:]  # All columns except the first column (alternatives)
+    criteria = df.columns[1:-1]  # All columns except the first one (alternatives) and last one (rank)
     weights = []  # Initialize an empty list for weights
     
     # Create a slider for each criterion (no weight sum restriction)
@@ -71,11 +75,11 @@ if uploaded_file is not None:
     
     # Step 1: Normalize the data
     normalized_df = normalize_data(df)
-    st.write("Step 1: Normalized Data", normalized_df)
+    st.write("Step 1: Normalized Data", pd.concat([df[['Alternative']], normalized_df], axis=1))
 
     # Step 2: Weighted Normalization
     weighted_matrix = weighted_normalization(normalized_df, weights)
-    st.write("Step 2: Weighted Normalized Matrix", weighted_matrix)
+    st.write("Step 2: Weighted Normalized Matrix", pd.concat([df[['Alternative']], weighted_matrix], axis=1))
     
     # Step 3: Calculate Ideal and Negative Ideal Solutions (A+ and A-)
     pis, nis = calculate_ideal_solutions(weighted_matrix, impacts[0])  # Assuming impacts are the same for all criteria
@@ -84,12 +88,19 @@ if uploaded_file is not None:
     
     # Step 4: Calculate Distances to PIS and NIS (Si+ and Si-)
     pos_distance, neg_distance = calculate_distances(weighted_matrix, pis, nis)
-    st.write("Step 4: Positive Ideal Solution Distance (Si+)", pos_distance)
-    st.write("Step 4: Negative Ideal Solution Distance (Si-)", neg_distance)
+    distance_df = pd.DataFrame({
+        'Alternative': df['Alternative'],
+        'Si+ (Distance to PIS)': pos_distance,
+        'Si- (Distance to NIS)': neg_distance
+    })
+    st.write("Step 4: Distances to PIS and NIS", distance_df)
     
     # Step 5: Calculate TOPSIS Scores
     topsis_score = calculate_topsis_score(pos_distance, neg_distance)
-    st.write("Step 5: TOPSIS Scores", topsis_score)
+    st.write("Step 5: TOPSIS Scores", pd.DataFrame({
+        'Alternative': df['Alternative'],
+        'TOPSIS Score': topsis_score
+    }))
     
     # Add the TOPSIS Score to the DataFrame and handle NaN values
     df['TOPSIS Score'] = topsis_score
@@ -102,10 +113,15 @@ if uploaded_file is not None:
     df['Rank'] = df['Rank'].astype(int)  # Ensure Rank is an integer type
     df = df.reset_index(drop=True)  # Reset the index to start from 0
     
-    st.write("Final Results:", df[['TOPSIS Score', 'Rank']])
+    st.write("Final Results:", df[['Alternative', 'TOPSIS Score', 'Rank']])
     
     # Ensure sorting by Rank before charting
-    df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
+    df_sorted = df[['Alternative', 'TOPSIS Score', 'Rank']].sort_values(by='Rank')
     
-    # Displaying the bar chart of TOPSIS scores
-    st.bar_chart(df_sorted['TOPSIS Score'])  # Plot only the TOPSIS Score column
+    # **Detailed Bar Chart** of TOPSIS Scores
+    fig, ax = plt.subplots(figsize=(10, 6))  # Adjusting figure size for clarity
+    ax.barh(df_sorted['Alternative'], df_sorted['TOPSIS Score'], color='skyblue')  # Horizontal bar chart
+    ax.set_xlabel('TOPSIS Score')  # Label for X-axis
+    ax.set_ylabel('Alternatives')  # Label for Y-axis
+    ax.set_title('TOPSIS Scores for Sustainability Alternatives')  # Title
+    st.pyplot(fig)  # Display the chart
