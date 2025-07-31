@@ -14,8 +14,8 @@ def topsis_method(df, weights, impacts):
     weighted_matrix = norm_df * weights
     
     # Positive and negative ideal solutions
-    pos_ideal = weighted_matrix.max()
-    neg_ideal = weighted_matrix.min()
+    pos_ideal = weighted_matrix.max() if impacts == 'Benefit' else weighted_matrix.min()
+    neg_ideal = weighted_matrix.min() if impacts == 'Benefit' else weighted_matrix.max()
     
     # Euclidean distance from ideal solutions
     pos_distance = np.sqrt(((weighted_matrix - pos_ideal) ** 2).sum(axis=1))
@@ -35,20 +35,28 @@ if uploaded_file is not None:
     if uploaded_file.name.endswith('csv'):
         df = pd.read_csv(uploaded_file)
     else:
-        df = pd.read_excel(uploaded_file, engine='openpyxl')  # Added openpyxl engine for Excel files
+        df = pd.read_excel(uploaded_file, engine='openpyxl')
     
     st.write("Data Preview:", df.head())
     
-    # User input for weights and impacts
-    st.sidebar.header("Set Criteria Weights")
+    # Ensure that weights sum to 1
+    st.sidebar.header("Set Criteria Weights (Total Sum = 1)")
     criteria = df.columns[1:]
     weights = []
+    
+    # User input for weights, ensuring the sum of weights equals 1
     for criterion in criteria:
         weight = st.sidebar.slider(f"Weight for {criterion}", 0.0, 1.0, 0.1)
         weights.append(weight)
+
+    weights_sum = sum(weights)
+    weights = np.array([w / weights_sum for w in weights])  # Normalize the weights
     
-    impacts = ['Positive'] * len(criteria)  # Assuming all impacts are positive for simplicity
-    weights = np.array(weights)
+    # User input for impacts (Benefit or Cost)
+    impacts = []
+    for criterion in criteria:
+        impact = st.sidebar.selectbox(f"Is {criterion} a benefit or cost?", ['Benefit', 'Cost'], key=criterion)
+        impacts.append(impact)
     
     # Compute TOPSIS scores
     if st.button('Calculate Rankings'):
