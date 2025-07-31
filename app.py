@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Function for TOPSIS calculation
 def topsis_method(df, weights, impacts):
-    # Normalize the decision matrix
+    # Normalize the decision matrix (skip the index/first column)
     scaler = MinMaxScaler()
     norm_df = scaler.fit_transform(df.iloc[:, 1:])
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
