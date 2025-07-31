@@ -11,7 +11,7 @@ def topsis_method(df, weights, impacts):
     norm_df = pd.DataFrame(norm_df, columns=df.columns[1:])
     
     # Ensure the weights are aligned with the criteria columns
-    weighted_matrix = norm_df * weights
+    weighted_matrix = norm_df.multiply(weights, axis=1)  # Use axis=1 for column-wise multiplication
     
     # Positive and negative ideal solutions
     pos_ideal = weighted_matrix.max() if impacts == 'Benefit' else weighted_matrix.min()
@@ -45,7 +45,7 @@ if uploaded_file is not None:
     
     # Ensure that weights sum to 1
     st.sidebar.header("Set Criteria Weights")
-    criteria = df.columns  # All columns except the first column (alternatives)
+    criteria = df.columns[1:]  # All columns except the first column (alternatives)
     weights = [0.0] * len(criteria)  # Initialize weights as zero
     
     # Dynamically adjust weights based on total weight remaining
@@ -77,7 +77,3 @@ if uploaded_file is not None:
         df['Rank'] = df['TOPSIS Score'].rank(ascending=False)  # Rank the alternatives based on TOPSIS Score
         st.write("Results:", df[['TOPSIS Score', 'Rank']])
         
-        # Ensure sorting by Rank before charting
-        df_sorted = df[['TOPSIS Score', 'Rank']].sort_values(by='Rank')
-        
-        st.bar_chart(df_sorted[['TOPSIS Score']])  # Plot only the TOPSIS Score
