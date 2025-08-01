@@ -1,2 +1,2 @@
 # EcoWise
-MCDM Sustainability Rankings with TOPSIS Methodology
+Web-based Intelligent Sustainability Evaluation using TOPSIS (WISE-T)
