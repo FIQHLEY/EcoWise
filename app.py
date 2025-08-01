@@ -32,7 +32,7 @@ def topsis_method(data, weights, impacts):
     return norm_data, weighted_data, ideal_solution, negative_ideal_solution, distance_to_ideal, distance_to_negative_ideal, topsis_score
 
 # Streamlit app
-st.title('EcoWise: MCDM Sustainability Rankings with TOPSIS Methodology')
+st.title('EcoWise: Web-based Intelligent Sustainability Evaluation using TOPSIS (WISE-T)')
 
 st.sidebar.header('Input Criteria for Sustainability Ranking')
 
